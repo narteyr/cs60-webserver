@@ -30,7 +30,7 @@ class StatusCode(Enum):
 
 #define host and ip address
 HOST = '0.0.0.0'
-PORT = 9091
+PORT = 9092
 
 #create TCP socket listening on IP ADDRESS AND PORT
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -55,7 +55,7 @@ try:
         request_params = request.split(" ")
 
         # validate the user's http request
-        if len(request_params) != MIN_PARAMS and request_params[0] not in methods:
+        if len(request_params) < MIN_PARAMS or request_params[0] not in methods:
             error_message: str = f"HTTP/1.1 {StatusCode.BAD_REQUEST.value} {StatusCode.BAD_REQUEST.name}\r\n\r\n"
             client_socket.sendall(error_message.encode())
             break
@@ -68,7 +68,14 @@ try:
             try:
                 with open(file_path, "r") as fp:
                     data = fp.read()
-                    client_socket.sendall(data.encode())
+                    headers = (
+                        "HTTP/1.1 200 OK\r\n"
+                        f"Content-Length: {len(data)}\r\n"
+                        "Content-Type: text\html\r\n"
+                        "\r\n"
+                    )                    
+                    client_socket.sendall(headers.encode() + data.encode())
+
             except FileNotFoundError:
                     error_message: str = "HTTP/1.1 404 Not Found\r\n\r\n <html><head></head><body><h1>404 Not Found</h1></body></html>\r\n"
                     client_socket.sendall(error_message.encode())
